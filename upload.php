@@ -30,26 +30,16 @@ function generateRandomString($length) {
     return $randomString;
 }
 
-// I don't really know if this function works
-function getuserinfo($db, $uid, $row) {
-    global $connection;
-    $query = $connection->prepare("SELECT * FROM ? WHERE UID = ?");
-    $result = $query->execute(array($db, $uid));
-    $rowresult = $query->fetchAll();
-    return $rowresult;
-}
-
-function TokenExists(string $token) {
-    global $connection;
-    $query = $connection->prepare('SELECT COUNT(UserPassword) FROM sharex WHERE UserPassword = "?"');
-    $result = $query->execute(array($token));
-    $row = $query->fetchAll();
+function TokenExists(string $token, PDO $pdo) {
+    $query = $pdo->prepare('SELECT COUNT(UserPassword) FROM sharex WHERE UserPassword = "?"');
+    $result = $pdo->execute(array($token));
+    $row = $pdo->fetchAll();
     return $row > 0;
 }
 
 
 if(isset($_POST['token'])) {
-    if(TokenExists($_POST['token'])) {
+    if(TokenExists($_POST['token'], $connection)) {
         if($randomstring) {
             $filename = generateRandomString($length); // TODO MOVE THIS SO I DONT NEED TO REPEAT CODE
             $target = $_FILES["x"]["name"];
@@ -72,7 +62,7 @@ if(isset($_POST['token'])) {
     echo "No POST data received from client.";
 }
 
-//remove the connection and unset the db credentials AND config variable
+//remove the connection and unset the db credentials
 $connection = null;
 
 unset($config, $db, $server, $user, $pass);
